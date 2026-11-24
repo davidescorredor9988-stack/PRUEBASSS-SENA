@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Interactiva de Conceptos: YOLOv8n + IoT + RED | Proyecto SENA</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            700: '#15803d',
+                            800: '#0f5132',
+                            900: '#064e3b',
+                            dark: '#022c22'
+                        },
+                        cyanTech: '#06b6d4',
+                        orangeTech: '#f97316',
+                        amberTech: '#d97706'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .tab-btn.active {
+            background-color: #059669;
+            color: #ffffff;
+            border-bottom: 3px solid #f97316;
+            box-shadow: 0 4px 14px 0 rgba(5, 150, 105, 0.39);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #059669;
+            border-radius: 4px;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.03); }
+        }
+        .glow-pulse {
+            animation: pulseGlow 3s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col custom-scrollbar">
+
+    <!-- ==================== ENCABEZADO Y NAVEGACIÓN ==================== -->
+    <header class="bg-brand-900 border-b border-emerald-700/50 p-4 sticky top-0 z-50 shadow-xl">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-emerald-800/80 border border-emerald-500/30 rounded-xl text-orangeTech text-2xl shadow-lg">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-black tracking-wide text-white flex items-center gap-2">
+                        GUÍA INTERACTIVA DE CONCEPTOS TÉCNICOS
+                        <span class="text-xs bg-orangeTech text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">SENA YOLOv8n</span>
+                    </h1>
+                    <p class="text-xs text-emerald-300">Fundamentos de Telecomunicaciones, Calidad de Servicio (QoS) y Visión Artificial</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <a href="#quiz" onclick="switchTab('quiz')" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-all shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question"></i>
+                    <span>Test de Sustentación SENA</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- MENÚ DE PESTAÑAS -->
+        <nav class="max-w-7xl mx-auto mt-4 flex overflow-x-auto gap-2 pb-1 custom-scrollbar">
+            <button onclick="switchTab('video')" id="tab-btn-video" class="tab-btn active px-4 py-2 rounded-t-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700">
+                <i class="fa-solid fa-video text-emerald-400"></i> 1. Video & Compresión
+            </button>
+            <button onclick="switchTab('qos')" id="tab-btn-qos" class="tab-btn px-4 py-2 rounded-t-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700">
+                <i class="fa-solid fa-traffic-light text-cyanTech"></i> 2. Calidad de Servicio (QoS)
+            </button>
+            <button onclick="switchTab('traffic')" id="tab-btn-traffic" class="tab-btn px-4 py-2 rounded-t-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700">
+                <i class="fa-solid fa-network-wired text-amberTech"></i> 3. Tráfico & Enlace
+            </button>
+            <button onclick="switchTab('arch')" id="tab-btn-arch" class="tab-btn px-4 py-2 rounded-t-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700">
+                <i class="fa-solid fa-sitemap text-purple-400"></i> 4. Arquitectura de Red
+            </button>
+            <button onclick="switchTab('metrics')" id="tab-btn-metrics" class="tab-btn px-4 py-2 rounded-t-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700">
+                <i class="fa-solid fa-stopwatch text-red-400"></i> 5. Bitrate & Latencia
+            </button>
+            <button onclick="switchTab('quiz')" id="tab-btn-quiz" class="tab-btn px-4 py-2 rounded-t-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700">
+                <i class="fa-solid fa-list-check text-yellow-400"></i> 6. Quiz Evaluativo
+            </button>
+        </nav>
+    </header>
+
+    <!-- ==================== CONTENIDO PRINCIPAL ==================== -->
+    <main class="max-w-7xl mx-auto w-full p-4 md:p-6 flex-grow space-y-6">
+
+        <!-- ==================== PESTAÑA 1: VIDEO Y COMPRESIÓN ==================== -->
+        <section id="tab-content-video" class="space-y-6">
+            <div class="glass-panel rounded-2xl p-6 border-l-4 border-emerald-500">
+                <h2 class="text-xl font-extrabold text-emerald-400 flex items-center gap-2 mb-2">
+                    <i class="fa-solid fa-film"></i> Parámetros de Video y Compresión Digital
+                </h2>
+                <p class="text-slate-300 text-xs md:text-sm leading-relaxed">
+                    En un sistema de videovigilancia IP inteligente, la transmisión de video no se realiza en estado "puro" o sin comprimir, ya que saturaría de inmediato cualquier red de telecomunicaciones. Comprender la <strong>Resolución</strong>, los <strong>FPS</strong> y el <strong>Códec</strong> es fundamental para dimensionar el impacto en el ancho de banda.
+                </p>
+            </div>
+
+            <!-- TARJETAS DE CONCEPTOS CLAVE -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Resolución -->
+                <div class="glass-panel p-5 rounded-xl border border-slate-700/60 hover:border-emerald-500/50 transition-all">
+                    <div class="w-10 h-10 rounded-lg bg-emerald-900/60 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold mb-3">
+                        <i class="fa-solid fa-expand text-lg"></i>
+                    </div>
+                    <h3 class="font-bold text-sm text-slate-100 mb-1">1. Resolución de Video</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed mb-3">
+                        Es la cantidad total de píxeles (ancho × alto) que componen cada fotograma. A mayor resolución, mayor nitidez para el modelo YOLOv8n, pero también se multiplican exponencialmente los datos a transmitir.
+                    </p>
+                    <ul class="text-[11px] space-y-1 font-mono text-slate-300 bg-slate-900/70 p-2.5 rounded border border-slate-800">
+                        <li>• <strong>640×480 (VGA):</strong> 307,200 px/frame</li>
+                        <li>• <strong>1280×720 (HD):</strong> 921,600 px/frame (3x VGA)</li>
+                        <li>• <strong>1920×1080 (FHD):</strong> 2,073,600 px/frame (6.7x VGA)</li>
+                    </ul>
+                </div>
+
+                <!-- FPS -->
+                <div class="glass-panel p-5 rounded-xl border border-slate-700/60 hover:border-emerald-500/50 transition-all">
+                    <div class="w-10 h-10 rounded-lg bg-cyan-900/60 border border-cyan-500/30 flex items-center justify-center text-cyanTech font-bold mb-3">
+                        <i class="fa-solid fa-bolt text-lg"></i>
+                    </div>
+                    <h3 class="font-bold text-sm text-slate-100 mb-1">2. Cuadros por Segundo (FPS)</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed mb-3">
+                        Indica la tasa de refresco o frecuencia temporal con la que la cámara captura imágenes. Determina la fluidez visual y la frecuencia con la que YOLOv8 ejecuta inferencias.
+                    </p>
+                    <ul class="text-[11px] space-y-1 font-mono text-slate-300 bg-slate-900/70 p-2.5 rounded border border-slate-800">
+                        <li>• <strong>15 FPS:</strong> Fluidez básica, ideal para ahorro de red.</li>
+                        <li>• <strong>30 FPS:</strong> Estándar industrial fluido en tiempo real.</li>
+                        <li>• <strong>60 FPS:</strong> Alta velocidad para objetos muy rápidos.</li>
+                    </ul>
+                </div>
+
+                <!-- Códec -->
+                <div class="glass-panel p-5 rounded-xl border border-slate-700/60 hover:border-emerald-500/50 transition-all">
+                    <div class="w-10 h-10 rounded-lg bg-orange-900/60 border border-orange-500/30 flex items-center justify-center text-orangeTech font-bold mb-3">
+                        <i class="fa-solid fa-file-video text-lg"></i>
+                    </div>
+                    <h3 class="font-bold text-sm text-slate-100 mb-1">3. Códec (H.264 vs H.265)</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed mb-3">
+                        El algoritmo matematico de codificación/decodificación que remueve la redundancia espacial y temporal del video.
+                    </p>
+                    <ul class="text-[11px] space-y-1 font-mono text-slate-300 bg-slate-900/70 p-2.5 rounded border border-slate-800">
+                        <li>• <strong>H.264 (AVC):</strong> Macrobloques de 16x16 px. Estándar universal.</li>
+                        <li>• <strong>H.265 (HEVC):</strong> Bloques CTU hasta 64x64 px. <strong>Ahorra entre 40% y 50% de ancho de banda</strong> con la misma calidad.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SIMULADOR INTERACTIVO DE CALCULADORA DE BITRATE Y COMPARADOR DE CÓDEC -->
+            <div class="glass-panel p-6 rounded-2xl border border-slate-700">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 mb-4 border-b border-slate-700 gap-2">
+                    <div>
+                        <h3 class="font-bold text-base text-white flex items-center gap-2">
+                            <i class="fa-solid fa-calculator text-emerald-400"></i> Calculador de Bitrate y Comparador Visual de Códecs
+                        </h3>
+                        <p class="text-xs text-slate-400">Modifica los parámetros y observa el cálculo del ancho de banda y la estructura del códec.</p>
+                    </div>
+                    <span class="text-xs font-mono bg-slate-900 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/30">
+                        Fórmula: Pixeles/s × Eficiencia Códec
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Controles -->
+                    <div class="space-y-4 bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">Resolución Seleccionada</label>
+                            <select id="sim-res" onchange="calcCodecDemo()" class="w-full bg-slate-800 border border-slate-700 text-white rounded p-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="640x480">640 x 480 (VGA)</option>
+                                <option value="1280x720" selected>1280 x 720 (HD 720p)</option>
+                                <option value="1920x1080">1920 x 1080 (Full HD 1080p)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">Tasa de Fotogramas (FPS)</label>
+                            <select id="sim-fps" onchange="calcCodecDemo()" class="w-full bg-slate-800 border border-slate-700 text-white rounded p-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="15">15 FPS</option>
+                                <option value="30" selected>30 FPS</option>
+                                <option value="60">60 FPS</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">Códec de Video</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button id="btn-codec-h264" onclick="setCodec('H.264')" class="py-2 px-3 rounded text-xs font-bold border border-slate-600 bg-slate-800 text-slate-300 hover:bg-slate-700">H.264 (AVC)</button>
+                                <button id="btn-codec-h265" onclick="setCodec('H.265')" class="py-2 px-3 rounded text-xs font-bold border border-emerald-500 bg-emerald-600 text-white shadow">H.265 (HEVC)</button>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-slate-800 text-xs space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Pixeles por Segundo:</span>
+                                <span id="out-px-sec" class="font-mono text-cyanTech font-bold">27.6 MPx/s</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Bitrate Generado Estimado:</span>
+                                <span id="out-bitrate" class="font-mono text-emerald-400 font-extrabold text-sm">1.68 Mbps</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visualización de Bloques del Códec -->
+                    <div class="lg:col-span-2 space-y-4">
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between h-full">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fa-solid fa-grip text-emerald-400"></i> Estructura de Segmentación del Códec Seleccionado
+                                </h4>
+                                <span id="codec-badge" class="text-[10px] font-mono bg-emerald-900/60 text-emerald-300 border border-emerald-500/40 px-2.5 py-0.5 rounded-full font-bold">H.265 - HEVC (Compresión Eficiente)</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-2">
+                                <!-- Diagrama H.264 -->
+                                <div id="card-h264-info" class="p-3 bg-slate-950 rounded-lg border border-slate-800 opacity-60">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="font-bold text-xs text-slate-300">H.264 (Macrobloques)</span>
+                                        <span class="text-[10px] font-mono text-slate-400">Fijo 16x16</span>
+                                    </div>
+                                    <div class="grid grid-cols-4 gap-1 p-2 bg-slate-900 rounded border border-slate-800 h-28">
+                                        <!-- Simulación de bloques iguales -->
+                                        <div class="bg-slate-800 border border-slate-700 rounded flex items-center justify-center text-[9px] text-slate-500">16x16</div>
+                                        <div class="bg-slate-800 border border-slate-700 rounded flex items-center justify-center text-[9px] text-slate-500">16x16</div>
+                                        <div class="bg-slate-800 border border-slate-700 rounded flex items-center justify-center text-[9px] text-slate-500">16x16</div>
+                                        <div class="bg-slate-800 border border-slate-700 rounded flex items-center justify-center text-[9px] text-slate-500">16x16</div>
+                                        <div class="bg-slate-800 border border-slate-700 rounded flex items-center justify-center text-[9px] text-slate-500">16x16</div>
+                                        <div class="bg-slate-800 border border-slate-700 rounded flex items-center justify-center text-[9px] text-slate-500">16x16</div>
+                                        <div class="bg-slate-800 border border-slate-700 rounded flex items-center justify-center text-[9px] text-slate-500">16x16</div>
+                                        <div class="bg-slate-800 border border-slate-700 rounded flex items-center justify-center text-[9px] text-slate-500">16x16</div>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-2">Divide la imagen en tamaños fijos. Consume aproximadamente el doble de ancho de banda que H.265.</p>
+                                </div>
+
+                                <!-- Diagrama H.265 -->
+                                <div id="card-h265-info" class="p-3 bg-slate-950 rounded-lg border border-emerald-500/50">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="font-bold text-xs text-emerald-400">H.265 (CTU Dinámico)</span>
+                                        <span class="text-[10px] font-mono text-emerald-400 font-bold">Hasta 64x64</span>
+                                    </div>
+                                    <div class="grid grid-cols-4 gap-1 p-2 bg-slate-900 rounded border border-slate-800 h-28">
+                                        <!-- Simulación de bloques adaptativos -->
+                                        <div class="col-span-2 row-span-2 bg-emerald-950/60 border border-emerald-600/50 rounded flex items-center justify-center text-[10px] text-emerald-300 font-bold">64x64 (Cielo/Fondo)</div>
+                                        <div class="bg-emerald-900/40 border border-emerald-500/40 rounded flex items-center justify-center text-[8px] text-emerald-400">16x16</div>
+                                        <div class="bg-emerald-900/40 border border-emerald-500/40 rounded flex items-center justify-center text-[8px] text-emerald-400">16x16</div>
+                                        <div class="bg-emerald-800/50 border border-emerald-400/50 rounded flex items-center justify-center text-[8px] text-emerald-300">8x8</div>
+                                        <div class="bg-emerald-800/50 border border-emerald-400/50 rounded flex items-center justify-center text-[8px] text-emerald-300">8x8</div>
+                                    </div>
+                                    <p class="text-[11px] text-slate-300 mt-2">Utiliza bloques grandes en áreas uniformes y bloques pequeños en detalles (personas/autos), optimizando la red.</p>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-emerald-950/40 rounded border border-emerald-800/50 text-xs text-emerald-200 flex items-center gap-3">
+                                <i class="fa-solid fa-lightbulb text-amberTech text-lg flex-shrink-0"></i>
+                                <span><strong>Recomendación SENA:</strong> Usar <strong>H.265 a 1280x720 30FPS</strong> permite enviar el stream con solo ~1.68 Mbps, dejando suficiente espacio en el enlace de 20 Mbps para evitar congestión en el Router.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== PESTAÑA 2: CALIDAD DE SERVICIO (QoS) ==================== -->
+        <section id="tab-content-qos" class="space-y-6 hidden">
+            <div class="glass-panel rounded-2xl p-6 border-l-4 border-cyanTech">
+                <h2 class="text-xl font-extrabold text-cyanTech flex items-center gap-2 mb-2">
+                    <i class="fa-solid fa-traffic-light"></i> Calidad de Servicio (QoS - Quality of Service)
+                </h2>
+                <p class="text-slate-300 text-xs md:text-sm leading-relaxed">
+                    QoS es el conjunto de mecanismos de red que permiten etiquetar y priorizar ciertos tipos de tráfico (como el video en tiempo real de seguridad industrial) sobre el tráfico no crítico (como descargas web o correo) cuando el enlace de telecomunicaciones se satura.
+                </p>
+            </div>
+
+            <!-- EXPLICACIÓN DE CLASES DE DIFSERV / DSCP -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- DSCP AF41 -->
+                <div class="glass-panel p-5 rounded-xl border border-emerald-500/50 bg-emerald-950/20">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-extrabold text-sm text-emerald-400">DSCP AF41</span>
+                        <span class="text-[10px] bg-emerald-800/80 text-emerald-200 font-mono px-2 py-0.5 rounded font-bold">ALTA PRIORIDAD</span>
+                    </div>
+                    <p class="text-xs text-slate-300 mb-2">Assured Forwarding Class 4, Low Drop Probability.</p>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Etiqueta asignada al video del sistema YOLOv8n. Los routers colocan estos paquetes en la cola preferencial, garantizando mínimo retardo y que nunca se descarten salvo congestión extrema.
+                    </p>
+                </div>
+
+                <!-- DSCP AF31 -->
+                <div class="glass-panel p-5 rounded-xl border border-amber-500/50 bg-amber-950/20">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-extrabold text-sm text-amber-400">DSCP AF31</span>
+                        <span class="text-[10px] bg-amber-800/80 text-amber-200 font-mono px-2 py-0.5 rounded font-bold">MEDIA PRIORIDAD</span>
+                    </div>
+                    <p class="text-xs text-slate-300 mb-2">Assured Forwarding Class 3, Low Drop Probability.</p>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Utilizado para tráfico de monitoreo operacional secundario o telemetría IoT de plantas. Tiene prioridad sobre la navegación general pero cede paso al video en tiempo real.
+                    </p>
+                </div>
+
+                <!-- Best Effort -->
+                <div class="glass-panel p-5 rounded-xl border border-slate-600 bg-slate-900/40">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-extrabold text-sm text-slate-300">Best Effort (DSCP 0)</span>
+                        <span class="text-[10px] bg-slate-800 text-slate-400 font-mono px-2 py-0.5 rounded font-bold">SIN PRIORIDAD</span>
+                    </div>
+                    <p class="text-xs text-slate-300 mb-2">Default Best Effort (Esfuerzo Estándar).</p>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Tráfico de otros equipos de la red (navegación, archivos, copias de seguridad). En caso de congestión en la cola del router, <strong>estos paquetes son los primeros en ser descartados</strong> para proteger la videovigilancia.
+                    </p>
+                </div>
+            </div>
+
+            <!-- SIMULADOR INTERACTIVO DE COLAS DE PRIORIDAD EN EL ROUTER -->
+            <div class="glass-panel p-6 rounded-2xl border border-slate-700">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 mb-4 border-b border-slate-700 gap-2">
+                    <div>
+                        <h3 class="font-bold text-base text-white flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-cyanTech"></i> Animador de Colas de Prioridad en la Interfaz del Router
+                        </h3>
+                        <p class="text-xs text-slate-400">Prueba cómo responde el algoritmo de encolamiento según el marcado DSCP seleccionado para el video.</p>
+                    </div>
+                    <button onclick="triggerQosCongestion()" class="bg-red-600 hover:bg-red-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 shadow">
+                        <i class="fa-solid fa-dumpster-fire"></i> Generar Ráfaga de Congestión
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                    <!-- Controles -->
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3">
+                        <label class="text-xs font-semibold text-slate-300 block">Marcado QoS del Video:</label>
+                        <select id="qos-sim-select" class="w-full bg-slate-800 border border-slate-700 text-white rounded p-2 text-xs font-bold text-emerald-400 focus:outline-none">
+                            <option value="AF41">DSCP AF41 (Prioridad Alta)</option>
+                            <option value="AF31">DSCP AF31 (Prioridad Media)</option>
+                            <option value="BE">Best Effort (Sin Prioridad)</option>
+                        </select>
+                        
+                        <div class="p-3 bg-slate-950 rounded border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                            <p><strong>Estado del Enlace:</strong> <span id="qos-link-status" class="text-emerald-400 font-bold">FLUIDO</span></p>
+                            <p><strong>Paquetes de Video Descartados:</strong> <span id="qos-video-dropped" class="font-mono text-red-400 font-bold">0</span></p>
+                            <p><strong>Paquetes de Fondo Descartados:</strong> <span id="qos-bg-dropped" class="font-mono text-amber-400 font-bold">0</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Diagrama Animado de Colas -->
+                    <div class="lg:col-span-3 bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col justify-between">
+                        <div class="space-y-3">
+                            <!-- Cola Alta Prioridad -->
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-[11px] font-bold text-emerald-400">
+                                    <span>COLA 1: AF41 (Video Crítico YOLO)</span>
+                                    <span id="q1-count" class="font-mono">0 / 10 pkts</span>
+                                </div>
+                                <div id="queue-1" class="h-8 bg-slate-900 rounded border border-emerald-500/30 flex items-center px-2 gap-1 overflow-hidden">
+                                    <!-- Paquetes dinámicos -->
+                                </div>
+                            </div>
+
+                            <!-- Cola Media Prioridad -->
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-[11px] font-bold text-amber-400">
+                                    <span>COLA 2: AF31 (Telemetría / IoT)</span>
+                                    <span id="q2-count" class="font-mono">0 / 10 pkts</span>
+                                </div>
+                                <div id="queue-2" class="h-8 bg-slate-900 rounded border border-amber-500/30 flex items-center px-2 gap-1 overflow-hidden">
+                                </div>
+                            </div>
+
+                            <!-- Cola Best Effort -->
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-[11px] font-bold text-slate-400">
+                                    <span>COLA 3: Best Effort (Tráfico de Otros Equipos)</span>
+                                    <span id="q3-count" class="font-mono">0 / 10 pkts</span>
+                                </div>
+                                <div id="queue-3" class="h-8 bg-slate-900 rounded border border-slate-700 flex items-center px-2 gap-1 overflow-hidden">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Salida del Scheduler -->
+                        <div class="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center text-xs">
+                            <span class="text-slate-400">Planificador de Transmisión del Router (Strict Priority / WFQ):</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-slate-300 font-mono">Salida Enlace WAN:</span>
+                                <div id="router-out-pipe" class="w-24 h-4 bg-emerald-950 border border-emerald-500 rounded overflow-hidden flex items-center justify-end px-1">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== PESTAÑA 3: TRÁFICO Y ENLACE ==================== -->
+        <section id="tab-content-traffic" class="space-y-6 hidden">
+            <div class="glass-panel rounded-2xl p-6 border-l-4 border-amberTech">
+                <h2 class="text-xl font-extrabold text-amberTech flex items-center gap-2 mb-2">
+                    <i class="fa-solid fa-network-wired"></i> Tráfico de Otros Equipos y Capacidad del Enlace Router
+                </h2>
+                <p class="text-slate-300 text-xs md:text-sm leading-relaxed">
+                    En una planta industrial real, el router no está dedicado exclusivamente a las cámaras. Computadores de oficina, servidores de base de datos y transferencias de archivos comparten la misma infraestructura de telecomunicaciones.
+                </p>
+            </div>
+
+            <!-- FÓRMULA MATEMÁTICA Y EXPLICACIÓN -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-panel p-5 rounded-xl border border-slate-700 space-y-3">
+                    <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-calculator text-amberTech"></i> Ecuación de Ancho de Banda Disponible
+                    </h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        El ancho de banda efectivo disponible para la transmisión de video del modelo de visión artificial se calcula restando el tráfico concurrente de la capacidad total del enlace:
+                    </p>
+
+                    <div class="bg-slate-950 p-4 rounded-lg font-mono text-xs text-amber-300 border border-amber-500/30 text-center space-y-1">
+                        <div>BW_Disponible_Video = BW_Enlace - (BW_Enlace × %Tráfico_Fondo)</div>
+                        <div class="text-[10px] text-slate-400">Ejemplo: 20 Mbps - (20 Mbps × 40%) = 12.00 Mbps Disponibles</div>
+                    </div>
+
+                    <p class="text-xs text-slate-400">
+                        Si la demanda total (Bitrate Video + Tráfico Fondo) supera el 100% de la capacidad del enlace, el buffer del router colapsa y genera <strong>latencia por cola y pérdida de paquetes</strong>.
+                    </p>
+                </div>
+
+                <!-- SIMULADOR DINÁMICO DE CARGA DE ENLACE -->
+                <div class="glass-panel p-5 rounded-xl border border-slate-700 space-y-4">
+                    <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-gauge-high text-cyanTech"></i> Simulador Dinámico de Saturación de Red
+                    </h3>
+
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold text-slate-300 mb-1">
+                                <span>Capacidad del Enlace del Router:</span>
+                                <span id="lbl-sim-bw" class="text-cyanTech font-bold">20 Mbps</span>
+                            </div>
+                            <input id="slider-sim-bw" type="range" min="5" max="100" value="20" step="5" oninput="updateTrafficSim()" class="w-full accent-cyanTech cursor-pointer h-1.5 bg-slate-800 rounded">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold text-slate-300 mb-1">
+                                <span>Tráfico de Otros Equipos:</span>
+                                <span id="lbl-sim-bg" class="text-amberTech font-bold">40 %</span>
+                            </div>
+                            <input id="slider-sim-bg" type="range" min="0" max="100" value="40" step="5" oninput="updateTrafficSim()" class="w-full accent-amberTech cursor-pointer h-1.5 bg-slate-800 rounded">
+                        </div>
+
+                        <!-- Barra Visualizador -->
+                        <div class="space-y-1 pt-2">
+                            <div class="flex justify-between text-[11px] font-mono">
+                                <span>Uso del Enlace: <strong id="val-sim-use">68%</strong></span>
+                                <span id="lbl-sim-loss" class="text-emerald-400 font-bold">Sin Pérdida de Paquetes</span>
+                            </div>
+                            <div class="w-full bg-slate-900 h-4 rounded-full overflow-hidden flex p-0.5 border border-slate-800">
+                                <div id="bar-video-part" class="bg-emerald-500 h-full rounded-l transition-all" style="width: 14%;"></div>
+                                <div id="bar-bg-part" class="bg-amber-500 h-full transition-all" style="width: 40%;"></div>
+                            </div>
+                            <div class="flex justify-between text-[10px] text-slate-400 font-mono pt-0.5">
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-emerald-500 inline-block"></span> Video YOLO (2.8 Mbps)</span>
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-amber-500 inline-block"></span> Tráfico Fondo</span>
+                                <span id="lbl-free-mbps" class="text-slate-300">Libre: 9.2 Mbps</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== PESTAÑA 4: ARQUITECTURA DE RED ==================== -->
+        <section id="tab-content-arch" class="space-y-6 hidden">
+            <div class="glass-panel rounded-2xl p-6 border-l-4 border-purple-500">
+                <h2 class="text-xl font-extrabold text-purple-400 flex items-center gap-2 mb-2">
+                    <i class="fa-solid fa-sitemap"></i> Arquitectura de Red y Roles de Dispositivos
+                </h2>
+                <p class="text-slate-300 text-xs md:text-sm leading-relaxed">
+                    La topología del laboratorio representa la estructura jerárquica de red convergente donde conviven el procesamiento de inteligencia artificial en el servidor y la visualización remota en el cliente.
+                </p>
+            </div>
+
+            <!-- TOPOLOGÍA INTERACTIVA CLICABLE -->
+            <div class="glass-panel p-6 rounded-2xl border border-slate-700">
+                <h3 class="font-bold text-sm text-slate-200 mb-4 text-center">
+                    Haz clic en cualquier dispositivo para inspeccionar su configuración de laboratorio
+                </h3>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <!-- Servidor -->
+                    <button onclick="selectArchNode('server')" id="node-btn-server" class="p-4 bg-slate-900 border-2 border-emerald-500 rounded-xl flex flex-col items-center gap-2 hover:bg-slate-800 transition-all text-center">
+                        <i class="fa-solid fa-server text-emerald-400 text-2xl"></i>
+                        <span class="font-bold text-xs text-white">SERVIDOR</span>
+                        <span class="text-[10px] font-mono text-emerald-400">YOLOv8n · VLAN 10</span>
+                    </button>
+
+                    <!-- Switch -->
+                    <button onclick="selectArchNode('switch')" id="node-btn-switch" class="p-4 bg-slate-900 border-2 border-slate-700 rounded-xl flex flex-col items-center gap-2 hover:bg-slate-800 transition-all text-center">
+                        <i class="fa-solid fa-network-wired text-cyanTech text-2xl"></i>
+                        <span class="font-bold text-xs text-white">SWITCH</span>
+                        <span class="text-[10px] font-mono text-cyanTech">2960 · 802.1Q</span>
+                    </button>
+
+                    <!-- Router -->
+                    <button onclick="selectArchNode('router')" id="node-btn-router" class="p-4 bg-slate-900 border-2 border-slate-700 rounded-xl flex flex-col items-center gap-2 hover:bg-slate-800 transition-all text-center">
+                        <i class="fa-solid fa-route text-purple-400 text-2xl"></i>
+                        <span class="font-bold text-xs text-white">ROUTER</span>
+                        <span class="text-[10px] font-mono text-purple-400">R-o-a-S · NAT</span>
+                    </button>
+
+                    <!-- Cliente -->
+                    <button onclick="selectArchNode('client')" id="node-btn-client" class="p-4 bg-slate-900 border-2 border-slate-700 rounded-xl flex flex-col items-center gap-2 hover:bg-slate-800 transition-all text-center">
+                        <i class="fa-solid fa-desktop text-orangeTech text-2xl"></i>
+                        <span class="font-bold text-xs text-white">CLIENTE</span>
+                        <span class="text-[10px] font-mono text-orangeTech">VLC · VLAN 20</span>
+                    </button>
+                </div>
+
+                <!-- TARJETA DETALLE DEL NODO -->
+                <div id="arch-node-detail" class="bg-slate-950 p-5 rounded-xl border border-emerald-500/40 space-y-3">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== PESTAÑA 5: BITRATE Y LATENCIA ==================== -->
+        <section id="tab-content-metrics" class="space-y-6 hidden">
+            <div class="glass-panel rounded-2xl p-6 border-l-4 border-red-500">
+                <h2 class="text-xl font-extrabold text-red-400 flex items-center gap-2 mb-2">
+                    <i class="fa-solid fa-stopwatch"></i> Métricas Clave: Bitrate y Latencia Extremo a Extremo
+                </h2>
+                <p class="text-slate-300 text-xs md:text-sm leading-relaxed">
+                    Evaluación del desempeño en tiempo real de la transmisión de video sobre la red de telecomunicaciones.
+                </p>
+            </div>
+
+            <!-- DESGLOSE DE LATENCIA EXTREMO A EXTREMO -->
+            <div class="glass-panel p-6 rounded-2xl border border-slate-700 space-y-4">
+                <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-red-400"></i> Desglose de Componentes de Latencia Total (ms)
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-center text-xs font-mono">
+                    <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                        <span class="text-slate-400 block text-[10px] uppercase">1. Inferencia IA (YOLO)</span>
+                        <span class="text-emerald-400 font-bold text-base">~12 ms</span>
+                        <span class="text-[9px] text-slate-500 block mt-1">Procesamiento yolov8n.pt</span>
+                    </div>
+                    <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                        <span class="text-slate-400 block text-[10px] uppercase">2. Encodificación Video</span>
+                        <span class="text-cyanTech font-bold text-base">~4 ms</span>
+                        <span class="text-[9px] text-slate-500 block mt-1">Compresión H.264 / H.265</span>
+                    </div>
+                    <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                        <span class="text-slate-400 block text-[10px] uppercase">3. Tránsito & Cola Router</span>
+                        <span class="text-amberTech font-bold text-base">~2 a 120 ms</span>
+                        <span class="text-[9px] text-slate-500 block mt-1">Varía según congestión QoS</span>
+                    </div>
+                    <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                        <span class="text-slate-400 block text-[10px] uppercase">4. Decodificación Cliente</span>
+                        <span class="text-purple-400 font-bold text-base">~3 ms</span>
+                        <span class="text-[9px] text-slate-500 block mt-1">Renderizado VLC</span>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 text-xs space-y-2">
+                    <div class="flex justify-between font-bold text-slate-200">
+                        <span>Fórmula Extremo a Extremo:</span>
+                        <span class="font-mono text-red-400">Latencia_Total = T_IA + T_Codec + T_Red_QoS + T_Cliente</span>
+                    </div>
+                    <p class="text-slate-400 text-[11px]">
+                        En condiciones óptimas (sin congestión), la latencia total se mantiene por debajo de <strong>20 ms</strong>, permitiendo una respuesta inmediata para la seguridad industrial.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== PESTAÑA 6: QUIZ DE EVALUACIÓN SENA ==================== -->
+        <section id="tab-content-quiz" class="space-y-6 hidden">
+            <div class="glass-panel rounded-2xl p-6 border-l-4 border-yellow-500">
+                <h2 class="text-xl font-extrabold text-yellow-400 flex items-center gap-2 mb-2">
+                    <i class="fa-solid fa-list-check"></i> Cuestionario Evaluativo de Sustentación - Proyecto SENA
+                </h2>
+                <p class="text-slate-300 text-xs md:text-sm leading-relaxed">
+                    Pon a prueba tus conocimientos sobre la red y el modelo YOLOv8n antes de presentar ante el jurado o instructor SENA.
+                </p>
+            </div>
+
+            <div class="glass-panel p-6 rounded-2xl border border-slate-700 space-y-6" id="quiz-container">
+                <!-- Pregunta 1 -->
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <p class="font-bold text-sm text-slate-100">1. ¿Por qué el códec H.265 es preferible sobre H.264 en un enlace saturado de 20 Mbps?</p>
+                    <div class="space-y-2 text-xs">
+                        <button onclick="checkAnswer(1, 'A', false)" class="q1-opt w-full text-left p-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">A) Porque incrementa los FPS de la cámara automáticamente.</button>
+                        <button onclick="checkAnswer(1, 'B', true)" class="q1-opt w-full text-left p-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">B) Porque reduce el ancho de banda requerido entre 40% y 50% con la misma calidad visual mediante bloques CTU adaptativos.</button>
+                        <button onclick="checkAnswer(1, 'C', false)" class="q1-opt w-full text-left p-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">C) Porque detecta cascos de seguridad sin necesidad de entrenamiento.</button>
+                    </div>
+                    <div id="q1-feedback" class="hidden text-xs font-bold p-2 rounded"></div>
+                </div>
+
+                <!-- Pregunta 2 -->
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <p class="font-bold text-sm text-slate-100">2. Si la red sufre congestión por tráfico de fondo, ¿qué hace el marcado QoS DSCP AF41 asignado al video?</p>
+                    <div class="space-y-2 text-xs">
+                        <button onclick="checkAnswer(2, 'A', false)" class="q2-opt w-full text-left p-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">A) Elimina los paquetes de video para darle paso a las descargas web.</button>
+                        <button onclick="checkAnswer(2, 'B', true)" class="q2-opt w-full text-left p-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">B) Prioriza los paquetes de video en la cola del router para que el tráfico Best Effort sea el primero en descartarse.</button>
+                        <button onclick="checkAnswer(2, 'C', false)" class="q2-opt w-full text-left p-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">C) Aumenta la velocidad del enlace de 20 Mbps a 100 Mbps automáticamente.</button>
+                    </div>
+                    <div id="q2-feedback" class="hidden text-xs font-bold p-2 rounded"></div>
+                </div>
+
+                <!-- Pregunta 3 -->
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <p class="font-bold text-sm text-slate-100">3. ¿Cuál es la función principal del Switch Cisco 2960 en esta arquitectura?</p>
+                    <div class="space-y-2 text-xs">
+                        <button onclick="checkAnswer(3, 'A', true)" class="q3-opt w-full text-left p-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">A) Conmutar tramas a nivel de Capa 2 y transportar el tráfico tagged de las VLANs 10 y 20 mediante enlaces troncales 802.1Q.</button>
+                        <button onclick="checkAnswer(3, 'B', false)" class="q3-opt w-full text-left p-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">B) Ejecutar la inferencia del modelo PyTorch de la cámara.</button>
+                        <button onclick="checkAnswer(3, 'C', false)" class="q3-opt w-full text-left p-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">C) Asignar direcciones IP públicas mediante NAT.</button>
+                    </div>
+                    <div id="q3-feedback" class="hidden text-xs font-bold p-2 rounded"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== LÓGICA JAVASCRIPT Y SIMULACIONES ==================== -->
+    <script>
+        // CAMBIO DE PESTAÑAS
+        function switchTab(tabId) {
+            const tabs = ['video', 'qos', 'traffic', 'arch', 'metrics', 'quiz'];
+            tabs.forEach(id => {
+                const btn = document.getElementById(`tab-btn-${id}`);
+                const content = document.getElementById(`tab-content-${id}`);
+                
+                if (id === tabId) {
+                    btn.classList.add('active');
+                    content.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('active');
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        // LÓGICA CALCULADORA DE CÓDEC
+        let currentCodec = 'H.265';
+
+        function setCodec(codec) {
+            currentCodec = codec;
+            const btnH264 = document.getElementById('btn-codec-h264');
+            const btnH265 = document.getElementById('btn-codec-h265');
+            const card264 = document.getElementById('card-h264-info');
+            const card265 = document.getElementById('card-h265-info');
+            const badge = document.getElementById('codec-badge');
+
+            if (codec === 'H.264') {
+                btnH264.className = 'py-2 px-3 rounded text-xs font-bold border border-emerald-500 bg-emerald-600 text-white shadow';
+                btnH265.className = 'py-2 px-3 rounded text-xs font-bold border border-slate-600 bg-slate-800 text-slate-300 hover:bg-slate-700';
+                card264.classList.remove('opacity-60');
+                card265.classList.add('opacity-60');
+                badge.innerText = 'H.264 - AVC (Mayor Ancho de Banda)';
+                badge.className = 'text-[10px] font-mono bg-amber-900/60 text-amber-300 border border-amber-500/40 px-2.5 py-0.5 rounded-full font-bold';
+            } else {
+                btnH265.className = 'py-2 px-3 rounded text-xs font-bold border border-emerald-500 bg-emerald-600 text-white shadow';
+                btnH264.className = 'py-2 px-3 rounded text-xs font-bold border border-slate-600 bg-slate-800 text-slate-300 hover:bg-slate-700';
+                card265.classList.remove('opacity-60');
+                card264.classList.add('opacity-60');
+                badge.innerText = 'H.265 - HEVC (Compresión Eficiente)';
+                badge.className = 'text-[10px] font-mono bg-emerald-900/60 text-emerald-300 border border-emerald-500/40 px-2.5 py-0.5 rounded-full font-bold';
+            }
+            calcCodecDemo();
+        }
+
+        function calcCodecDemo() {
+            const res = document.getElementById('sim-res').value;
+            const fps = parseInt(document.getElementById('sim-fps').value);
+
+            let pixels = 1280 * 720;
+            if (res === '640x480') pixels = 640 * 480;
+            if (res === '1920x1080') pixels = 1920 * 1080;
+
+            const pxPerSec = (pixels * fps) / 1000000;
+            document.getElementById('out-px-sec').innerText = `${pxPerSec.toFixed(1)} MPx/s`;
+
+            let baseFactor = 0.06;
+            if (currentCodec === 'H.265') baseFactor = 0.032;
+
+            const calculatedBitrate = pxPerSec * baseFactor;
+            document.getElementById('out-bitrate').innerText = `${calculatedBitrate.toFixed(2)} Mbps`;
+        }
+
+        // SIMULADOR DINÁMICO DE TRÁFICO Y ENLACE
+        function updateTrafficSim() {
+            const bwMbps = parseFloat(document.getElementById('slider-sim-bw').value);
+            const bgPct = parseInt(document.getElementById('slider-sim-bg').value);
+
+            document.getElementById('lbl-sim-bw').innerText = `${bwMbps} Mbps`;
+            document.getElementById('lbl-sim-bg').innerText = `${bgPct} %`;
+
+            const videoMbps = 2.80;
+            const bgMbps = bwMbps * (bgPct / 100.0);
+            const totalDemand = videoMbps + bgMbps;
+
+            const usePct = Math.min(100, Math.round((totalDemand / bwMbps) * 100));
+            document.getElementById('val-sim-use').innerText = `${usePct}%`;
+
+            const videoPartWidth = Math.min(100, (videoMbps / bwMbps) * 100);
+            const bgPartWidth = Math.min(100 - videoPartWidth, (bgMbps / bwMbps) * 100);
+
+            document.getElementById('bar-video-part').style.width = `${videoPartWidth}%`;
+            document.getElementById('bar-bg-part').style.width = `${bgPartWidth}%`;
+
+            const freeMbps = Math.max(0, bwMbps - totalDemand).toFixed(1);
+            document.getElementById('lbl-free-mbps').innerText = `Libre: ${freeMbps} Mbps`;
+
+            const lossLbl = document.getElementById('lbl-sim-loss');
+            if (totalDemand > bwMbps) {
+                lossLbl.innerText = '⚠️ SATURACIÓN Y PÉRDIDA DE PAQUETES EN ROUTER';
+                lossLbl.className = 'text-red-400 font-bold animate-pulse';
+            } else {
+                lossLbl.innerText = '✓ Sin Pérdida de Paquetes';
+                lossLbl.className = 'text-emerald-400 font-bold';
+            }
+        }
+
+        // ARQUITECTURA DE RED INTERACTIVA
+        const archDetails = {
+            server: {
+                title: "SERVIDOR DE INGESTA E INFERENCIA (YOLOv8n)",
+                color: "text-emerald-400",
+                border: "border-emerald-500/40",
+                text: "Servidor central en VLAN 10. Recibe los flujos de video sin procesar de las cámaras, ejecuta el modelo yolov8n.pt en PyTorch para generar las bounding boxes (personas y autos) y retransmite la señal mediante RTSP/RTP."
+            },
+            switch: {
+                title: "SWITCH INDUSTRIAL CISCO 2960 (CAPA 2)",
+                color: "text-cyanTech",
+                border: "border-cyan-500/40",
+                text: "Conmutador de acceso responsable de segmentar el tráfico mediante VLANs (VLAN 10 para Servidor/Cámaras, VLAN 20 para Cliente). Utiliza tramas con etiquetado 802.1Q en sus puertos troncales."
+            },
+            router: {
+                title: "ROUTER DE BORDE (ROUTER-ON-A-STICK & QOS)",
+                color: "text-purple-400",
+                border: "border-purple-500/40",
+                text: "Realiza el enrutamiento inter-VLAN a través de subinterfaces lógicas y aplica las políticas de Calidad de Servicio (QoS). Administra la cola de ancho de banda restringido (ej. 20 Mbps) e implementa NAT."
+            },
+            client: {
+                title: "ESTACIÓN CLIENTE DE MONITOREO (VLC PLAYER)",
+                color: "text-orangeTech",
+                border: "border-orange-500/40",
+                text: "Equipo terminal ubicado en la VLAN 20. Decodifica el flujo de video recibido de la red y renderiza en pantalla las detecciones con el retardo acumulado de transmisión y procesamiento."
+            }
+        };
+
+        function selectArchNode(nodeKey) {
+            const data = archDetails[nodeKey];
+            const container = document.getElementById('arch-node-detail');
+            container.className = `bg-slate-950 p-5 rounded-xl border ${data.border} space-y-2 transition-all`;
+            container.innerHTML = `
+                <h4 class="font-bold text-sm ${data.color}">${data.title}</h4>
+                <p class="text-xs text-slate-300 leading-relaxed">${data.text}</p>
+            `;
+
+            ['server', 'switch', 'router', 'client'].forEach(k => {
+                const btn = document.getElementById(`node-btn-${k}`);
+                if (k === nodeKey) {
+                    btn.classList.add('border-emerald-500', 'bg-slate-800');
+                    btn.classList.remove('border-slate-700');
+                } else {
+                    btn.classList.remove('border-emerald-500', 'bg-slate-800');
+                    btn.classList.add('border-slate-700');
+                }
+            });
+        }
+
+        // SIMULADOR DE COLAS DE PRIORIDAD (QoS)
+        let qosVideoDroppedCount = 0;
+        let qosBgDroppedCount = 0;
+
+        function triggerQosCongestion() {
+            const selectedQos = document.getElementById('qos-sim-select').value;
+            const q1 = document.getElementById('queue-1');
+            const q2 = document.getElementById('queue-2');
+            const q3 = document.getElementById('queue-3');
+
+            q1.innerHTML = ''; q2.innerHTML = ''; q3.innerHTML = '';
+
+            // Llenar cola Best Effort hasta desbordar
+            for (let i = 0; i < 12; i++) {
+                if (i < 8) {
+                    q3.innerHTML += `<span class="w-3 h-5 bg-slate-500 rounded-xs flex-shrink-0"></span>`;
+                } else {
+                    qosBgDroppedCount++;
+                }
+            }
+
+            // Paquetes de Video según marcado
+            if (selectedQos === 'AF41') {
+                for (let i = 0; i < 5; i++) {
+                    q1.innerHTML += `<span class="w-4 h-5 bg-emerald-500 rounded-xs flex-shrink-0 animate-bounce"></span>`;
+                }
+            } else if (selectedQos === 'AF31') {
+                for (let i = 0; i < 5; i++) {
+                    q2.innerHTML += `<span class="w-4 h-5 bg-amber-500 rounded-xs flex-shrink-0"></span>`;
+                }
+            } else {
+                // Best Effort
+                qosVideoDroppedCount += 3;
+            }
+
+            document.getElementById('qos-video-dropped').innerText = qosVideoDroppedCount;
+            document.getElementById('qos-bg-dropped').innerText = qosBgDroppedCount;
+            document.getElementById('q3-count').innerText = "12 / 10 pkts (DESBORDE)";
+            document.getElementById('qos-link-status').innerText = "CONGESTIÓN SIMULADA";
+            document.getElementById('qos-link-status').className = "text-red-400 font-bold animate-pulse";
+
+            setTimeout(() => {
+                document.getElementById('qos-link-status').innerText = "FLUIDO";
+                document.getElementById('qos-link-status').className = "text-emerald-400 font-bold";
+            }, 3000);
+        }
+
+        // RESPUESTAS DEL QUIZ
+        function checkAnswer(qNum, option, isCorrect) {
+            const feedback = document.getElementById(`q${qNum}-feedback`);
+            feedback.classList.remove('hidden');
+
+            if (isCorrect) {
+                feedback.className = "text-xs font-bold p-2.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/40 mt-2";
+                feedback.innerHTML = `✓ ¡Correcto! Opción ${option}. Excelente respuesta para la sustentación SENA.`;
+            } else {
+                feedback.className = "text-xs font-bold p-2.5 rounded bg-red-950 text-red-300 border border-red-500/40 mt-2";
+                feedback.innerHTML = `✕ Opción ${option} incorrecta. Revisa el contenido de la pestaña explicativa correspondiente.`;
+            }
+        }
+
+        // INICIALIZACIÓN
+        window.onload = function() {
+            calcCodecDemo();
+            updateTrafficSim();
+            selectArchNode('server');
+        };
+    </script>
+</body>
+</html>
